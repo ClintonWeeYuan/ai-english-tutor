@@ -1,11 +1,69 @@
 import Head from 'next/head'
 import Image from 'next/image'
 import { Inter } from 'next/font/google'
-import styles from '@/src/styles/Home.module.css'
+import {useRef, useState} from "react";
 
 const inter = Inter({ subsets: ['latin'] })
 
 export default function Home() {
+
+  const [topic, setTopic] = useState("")
+  const [sentence, setSentence] = useState("")
+  const [sentenceLoading, setSentenceLoading] = useState(false);
+  const [mood, setMood] = useState("")
+
+  const sentenceRef = useRef<null | HTMLDivElement>(null);
+
+  const scrollToSentence = () => {
+    if (sentenceRef.current !== null) {
+      sentenceRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
+  const prompt = `Write a sentence based on the following topics, written in the following mood.\n
+    Topic: ${topic}\n
+    Mood: ${mood} \n
+    Short Essay:`;
+
+  const generateSentence = async (e: any) => {
+    e.preventDefault();
+    setSentence("");
+    setSentenceLoading(true);
+    const response = await fetch("/api/getSentence", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        prompt,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+
+    // This data is a ReadableStream
+    const data = response.body;
+    if (!data) {
+      return;
+    }
+
+    const reader = data.getReader();
+    const decoder = new TextDecoder();
+    let done = false;
+
+    while (!done) {
+      const { value, done: doneReading } = await reader.read();
+      done = doneReading;
+      const chunkValue = decoder.decode(value);
+      setSentence((prev) => prev + chunkValue);
+    }
+    scrollToSentence();
+    setSentenceLoading(false);
+    console.log(sentence)
+  };
+
   return (
     <>
       <Head>
@@ -14,110 +72,52 @@ export default function Home() {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <main className={styles.main}>
-        <div className={styles.description}>
-          <p>
-            Get started by editing&nbsp;
-            <code className={styles.code}>src/pages/index.tsx</code>
-          </p>
-          <div>
-            <a
-              href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              By{' '}
-              <Image
-                src="/vercel.svg"
-                alt="Vercel Logo"
-                className={styles.vercelLogo}
-                width={100}
-                height={24}
-                priority
-              />
-            </a>
-          </div>
-        </div>
-
-        <div className={styles.center}>
-          <Image
-            className={styles.logo}
-            src="/next.svg"
-            alt="Next.js Logo"
-            width={180}
-            height={37}
-            priority
-          />
-          <div className={styles.thirteen}>
-            <Image
-              src="/thirteen.svg"
-              alt="13"
-              width={40}
-              height={31}
-              priority
-            />
-          </div>
-        </div>
-
-        <div className={styles.grid}>
-          <a
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <h2 className={inter.className}>
-              Docs <span>-&gt;</span>
-            </h2>
-            <p className={inter.className}>
-              Find in-depth information about Next.js features and&nbsp;API.
-            </p>
-          </a>
-
-          <a
-            href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <h2 className={inter.className}>
-              Learn <span>-&gt;</span>
-            </h2>
-            <p className={inter.className}>
-              Learn about Next.js in an interactive course with&nbsp;quizzes!
-            </p>
-          </a>
-
-          <a
-            href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <h2 className={inter.className}>
-              Templates <span>-&gt;</span>
-            </h2>
-            <p className={inter.className}>
-              Discover and deploy boilerplate example Next.js&nbsp;projects.
-            </p>
-          </a>
-
-          <a
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <h2 className={inter.className}>
-              Deploy <span>-&gt;</span>
-            </h2>
-            <p className={inter.className}>
-              Instantly deploy your Next.js site to a shareable URL
-              with&nbsp;Vercel.
-            </p>
-          </a>
-        </div>
-      </main>
+     <div className="w-screen h-screen flex justify-center py-4 md:items-center">
+       <div className="flex flex-col items-center w-full px-4 md:w-1/2">
+       <p className="text-4xl font-bold mb-4">Generate a Sentence</p>
+         <input type="text" onChange={(e) => setTopic(e.currentTarget.value)} placeholder="Topic..." className="input input-bordered input-success w-full mb-4" />
+         <select className="select select-success w-full mb-4" onChange={(e) => {setMood(e.currentTarget.value)}}>
+           <option disabled selected>Pick a Mood</option>
+           <option>Romantic</option>
+           <option>Classy</option>
+           <option>Mystery</option>
+           <option>Horror</option>
+         </select>
+       <button className="btn btn-primary w-full mb-8" onClick={(e) => generateSentence(e)}>
+         Generate sentence &rarr;
+       </button>
+         {sentence && (
+           <>
+             <div>
+               <h2
+                 className="sm:text-4xl text-3xl font-bold text-slate-900 mx-auto mb-2"
+                 ref={sentenceRef}
+               >
+                 Your sentence
+               </h2>
+             </div>
+             <div className="space-y-8 flex flex-col items-center justify-center max-w-xl mx-auto">
+               {sentence
+                 .substring(sentence.indexOf("0") + 1)
+                 .split("2.")
+                 .map((generatedSentence) => {
+                   return (
+                     <div
+                       className="bg-white rounded-xl shadow-md p-4 hover:bg-gray-100 transition cursor-copy border"
+                       onClick={() => {
+                         navigator.clipboard.writeText(sentence);
+                       }}
+                       key={generatedSentence}
+                     >
+                       <p>{generatedSentence}</p>
+                     </div>
+                   );
+                 })}
+             </div>
+           </>
+         )}
+       </div>
+     </div>
     </>
   )
 }
