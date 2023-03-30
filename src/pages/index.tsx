@@ -74,7 +74,7 @@ export default function Home() {
         <meta name="viewport" content="width=device-width, initial-scale=1"/>
         <link rel="icon" href="/favicon.ico"/>
       </Head>
-      <div className="w-screen h-screen flex justify-center py-4 md:items-center">
+      <div className="w-screen min-h-screen flex justify-center py-4 md:items-center">
         <div className="flex flex-col items-center w-full px-4 md:w-1/2">
           <p className="text-4xl font-bold mb-4">Generate a Sentence</p>
           <input type="text" onChange={(e) => setTopic(e.currentTarget.value)} placeholder="Topic..."
