@@ -2,6 +2,7 @@ import Head from 'next/head'
 import Image from 'next/image'
 import { Inter } from 'next/font/google'
 import {useRef, useState} from "react";
+import Spinner from "@/components/Spinner";
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -84,7 +85,7 @@ export default function Home() {
            <option>Horror</option>
          </select>
        <button className="btn btn-primary w-full mb-8" onClick={(e) => generateSentence(e)}>
-         Generate sentence &rarr;
+         {sentenceLoading ? <Spinner/>  : <p>Generate sentence &rarr;</p>}
        </button>
          {sentence && (
            <>
