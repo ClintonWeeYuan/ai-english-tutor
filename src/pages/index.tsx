@@ -13,8 +13,8 @@ export default function Home() {
   const [sentence, setSentence] = useState("")
   const [sentenceLoading, setSentenceLoading] = useState(false);
   const [mood, setMood] = useState("")
-  const [words, setWords] = useState<String[]>([])
-  const [word, setWord] = useState<String>("")
+  const [words, setWords] = useState<string[]>([])
+  const [word, setWord] = useState<string>("")
 
   const sentenceRef = useRef<null | HTMLDivElement>(null);
 
