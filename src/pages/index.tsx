@@ -79,10 +79,10 @@ export default function Home() {
           <p className="text-4xl font-bold mb-4">Generate a Sentence</p>
           <input type="text" onChange={(e) => setTopic(e.currentTarget.value)} placeholder="Topic..."
                  className="input input-bordered input-success w-full mb-4"/>
-          <select className="select select-success w-full mb-4" onChange={(e) => {
+          <select defaultValue={"Pick a Mood"} className="select select-success w-full mb-4" onChange={(e) => {
             setMood(e.currentTarget.value)
           }}>
-            <option disabled selected>Pick a Mood</option>
+            <option disabled>Pick a Mood</option>
             <option>Romantic</option>
             <option>Classy</option>
             <option>Mystery</option>
